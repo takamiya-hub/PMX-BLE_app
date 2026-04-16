@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リハビリ支援コントローラー</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f7f6; color: #333; }
+        h2 { text-align: center; color: #444; margin-bottom: 30px; }
+        
+        /* カードデザイン */
+        .motion-card {
+            background: white;
+            border-left: 5px solid #007bff; /* 青いライン */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        /* 背屈（動作2）だけ色を変えて区別しやすくする */
+        .motion-card.haikutsu {
+            border-left-color: #28a745; /* 緑のライン */
+        }
+
+        .motion-card h3 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        /* 入力エリアのレイアウト */
+        .input-row { display: flex; justify-content: space-between; gap: 15px; }
+        .input-group { flex: 1; }
+        
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; color: #666; }
+        input[type="number"] { 
+            width: 100%; padding: 10px; font-size: 16px; 
+            border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; 
+        }
+        span.unit { font-size: 0.8em; color: #888; float: right; margin-top: -25px; margin-right: 10px; position: relative; z-index: 10; }
+
+        /* パワースライダー */
+        .power-group { margin-top: 15px; }
+        .power-group label { display: block; font-weight: bold; font-size: 0.9em; color: #666; margin-bottom: 4px; }
+        input[type="range"] { width: 100%; margin-top: 4px; accent-color: #007bff; cursor: pointer; }
+        .motion-card.haikutsu input[type="range"] { accent-color: #28a745; }
+        .power-value { font-size: 1.1em; font-weight: bold; color: #007bff; }
+        .motion-card.haikutsu .power-value { color: #28a745; }
+
+        /* ボタン */
+        button { 
+            width: 100%; padding: 15px; font-size: 18px; font-weight: bold; 
+            cursor: pointer; background-color: #007bff; color: white; 
+            border: none; border-radius: 50px; transition: background 0.3s;
+            box-shadow: 0 4px 6px rgba(0,123,255,0.2);
+        }
+        button:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
+        button:hover:not(:disabled) { background-color: #0056b3; transform: translateY(-1px); }
+        
+        button#connectBtn { background-color: #6c757d; margin-bottom: 20px; font-size: 16px; padding: 10px; }
+        
+        /* ログエリア */
+        .log { background: #333; color: #0f0; padding: 10px; height: 100px; overflow-y: scroll; font-family: monospace; border-radius: 5px; margin-top: 30px; font-size: 0.8em; }
+        .status-badge { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <h2>リハビリ装置コントローラー</h2>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button id="connectBtn" onclick="connectToDevice()">Arduinoに接続する</button>
+        <div style="margin-top:5px;">ステータス: <span id="status" class="status-badge" style="color:red;">未接続</span></div>
+    </div>
+
+    <div class="motion-card">
+        <h3> 動作 1：掌屈（しょうくつ）</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label>移動時間</label>
+                <input type="number" id="time1" value="0" placeholder="0-127">
+                <span class="unit">秒</span>
+            </div>
+            <div class="input-group">
+                <label>目標角度</label>
+                <input type="number" id="angle1" value="0" placeholder="0-127">
+                <span class="unit">度</span>
+            </div>
+        </div>
+        <div class="power-group">
+            <label>出力パワー上限：<span id="palmarPowerVal" class="power-value">100</span>%</label>
+            <input type="range" id="palmarPower" min="0" max="100" value="100"
+                   oninput="document.getElementById('palmarPowerVal').innerText = this.value">
+        </div>
+    </div>
+
+    <div class="motion-card haikutsu">
+        <h3> 動作 2：背屈（はいくつ）</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label>移動時間</label>
+                <input type="number" id="time2" value="0" placeholder="0-127">
+                <span class="unit">秒</span>
+            </div>
+            <div class="input-group">
+                <label>目標角度</label>
+                <input type="number" id="angle2" value="0" placeholder="0-127">
+                <span class="unit">度</span>
+            </div>
+        </div>
+        <div class="power-group">
+            <label>出力パワー上限：<span id="dorsalPowerVal" class="power-value">100</span>%</label>
+            <input type="range" id="dorsalPower" min="0" max="100" value="100"
+                   oninput="document.getElementById('dorsalPowerVal').innerText = this.value">
+        </div>
+    </div>
+
+    <button id="sendBtn" onclick="sendMotionData()" disabled>設定を送信して開始 ▶</button>
+
+    <div id="logArea" class="log">・通信ログ</div>
+
+    <script>
+        // ==========================================================
+        // ★ここにあなたのUUIDを入れてください★
+        const SERVICE_UUID = "0979fbb4-70ed-4dd5-af21-51a7067f25ea"; 
+        const CHAR_UUID    = "02ea9c24-b4b3-42de-88e7-0e418eb8b889";
+        // ==========================================================
+
+        let bleDevice = null;
+        let bleCharacteristic = null;
+
+        function log(text) {
+            const logArea = document.getElementById('logArea');
+            logArea.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${text}</div>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        // 接続処理
+        async function connectToDevice() {
+            try {
+                log("デバイスを検索中...");
+
+                // 1. デバイスを探す
+                bleDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [SERVICE_UUID] }]
+                });
+
+                // 「gattserverdisconnected」というイベントが起きたら onDisconnected(切断) を実行せよ
+                bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+                
+                // 2. サーバーに接続
+                const server = await bleDevice.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                bleCharacteristic = await service.getCharacteristic(CHAR_UUID);
+
+                document.getElementById("status").innerText = "接続済み";
+                document.getElementById("status").style.color = "green";
+                document.getElementById("sendBtn").disabled = false;
+                // 接続ボタンを目立たなくする
+                document.getElementById("connectBtn").innerText = "✅ 接続完了";
+                document.getElementById("connectBtn").style.backgroundColor = "#28a745";
+                
+                log("接続成功！準備完了。");
+
+            } catch (error) {
+                log("エラー: " + error);
+            }
+        }
+
+        // 送信処理
+        async function sendMotionData() {
+            if (!bleCharacteristic) return;
+
+            try {
+                // 入力値の取得
+                let palmarPower = Number(document.getElementById("palmarPower").value);
+                let dorsalPower = Number(document.getElementById("dorsalPower").value);
+                let t1 = Number(document.getElementById("time1").value);
+                let a1 = Number(document.getElementById("angle1").value);
+                let t2 = Number(document.getElementById("time2").value);
+                let a2 = Number(document.getElementById("angle2").value);
+
+                // 掌屈（動作1）の角度をマイナスに変換（掌屈はサーボの負方向）
+                a1 = -Math.abs(a1);
+
+                // 配列作成: [掌屈パワー, 背屈パワー, 掌屈時間, 掌屈角度, 背屈時間, 背屈角度]
+                const dataArray = [palmarPower, dorsalPower, t1, a1, t2, a2];
+
+                log(`送信: 掌屈パワー=${palmarPower}%, 背屈パワー=${dorsalPower}% ／ 掌屈[${t1}秒, ${a1}°] 背屈[${t2}秒, ${a2}°]`);
+
+                const dataToSend = new Uint8Array(dataArray);
+                await bleCharacteristic.writeValue(dataToSend);
+
+                log("送信完了！");
+
+            } catch (error) {
+                log("送信エラー: " + error);
+            }
+        }
+        // 切断された時に実行される関数
+        function onDisconnected(event) {
+            log("⚠️ デバイスとの接続が切れました", "error");
+
+            // 1. ステータス表示を「未接続」に戻す
+            const statusText = document.getElementById("status");
+            statusText.innerText = "未接続";
+            statusText.style.color = "red";
+
+            // 2. 接続ボタンを元に戻す
+            const connectBtn = document.getElementById("connectBtn");
+            connectBtn.innerText = "📡 Arduinoに接続する";
+            connectBtn.style.backgroundColor = "#6c757d"; // 元のグレーっぽい色
+            connectBtn.disabled = false; // 押せるようにする
+
+            // 3. 送信ボタンを押せなくする
+            document.getElementById("sendBtn").disabled = true;
+            
+            // 変数をクリア
+            bleDevice = null;
+            bleCharacteristic = null;
+        }
+    </script>
+</body>
+</html>
