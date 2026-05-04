@@ -43,9 +43,6 @@
         .power-value { font-size: 1.1em; font-weight: bold; color: #007bff; }
         .motion-card.haikutsu .power-value { color: #28a745; }
 
-        /* 動作アイコン */
-        .card-icon { text-align: center; margin: 6px 0 14px; }
-
         /* ボタン */
         button { 
             width: 100%; padding: 15px; font-size: 18px; font-weight: bold; 
@@ -59,7 +56,15 @@
         button#connectBtn { background-color: #6c757d; margin-bottom: 20px; font-size: 16px; padding: 10px; }
         
         /* ログエリア */
-        .log { background: #333; color: #0f0; padding: 10px; height: 100px; overflow-y: scroll; font-family: monospace; border-radius: 5px; margin-top: 30px; font-size: 0.8em; }
+        .log-label { font-weight: bold; font-size: 0.85em; color: #888; margin-top: 24px; margin-bottom: 6px; }
+        .log { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; height: 130px; overflow-y: scroll; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
+        .log-entry { display: flex; align-items: flex-start; gap: 8px; padding: 5px 4px; border-bottom: 1px solid #f5f5f5; font-size: 0.88em; }
+        .log-entry:last-child { border-bottom: none; }
+        .log-time { color: #bbb; font-size: 0.82em; flex-shrink: 0; padding-top: 1px; }
+        .log-text { color: #444; }
+        .log-entry.success .log-text { color: #28a745; font-weight: bold; }
+        .log-entry.error   .log-text { color: #dc3545; font-weight: bold; }
+        .log-entry.connect .log-text { color: #007bff; }
         .status-badge { background: #eee; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 10px; }
     </style>
 </head>
@@ -68,44 +73,12 @@
     <h2>リハビリ装置コントローラー</h2>
 
     <div style="text-align: center; margin-bottom: 20px;">
-        <button id="connectBtn" onclick="connectToDevice()">Arduinoに接続する</button>
+        <button id="connectBtn" onclick="connectToDevice()">デバイスに接続する</button>
         <div style="margin-top:5px;">ステータス: <span id="status" class="status-badge" style="color:red;">未接続</span></div>
     </div>
 
     <div class="motion-card">
-        <h3>動作 1：掌屈（しょうくつ）</h3>
-        <div class="card-icon">
-            <!-- 掌屈アイコン：側面ビュー。前腕（先細り）＋手（手のひら・指4本・親指）が掌側へ曲がる -->
-            <svg width="160" height="120" viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
-                <!-- 前腕（側面、肘側で太く手首側で細い、解剖学的なくびれ） -->
-                <path d="M 5,30 C 25,26 50,30 68,38 C 73,40 76,43 78,45 L 78,55 C 76,57 73,60 68,62 C 50,70 25,74 5,70 Z"
-                      fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.5" stroke-linejoin="round"/>
-                <!-- 手＋指のグループ（掌屈方向に40°回転） -->
-                <g transform="rotate(40, 78, 50)">
-                    <!-- 手のひら（手の甲側面） -->
-                    <path d="M 78,40 C 90,38 105,38 117,42 C 124,44 126,48 126,50 C 126,52 124,56 117,58 C 105,62 90,62 78,60 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.5" stroke-linejoin="round"/>
-                    <!-- 親指（手の甲側に立ち上がる） -->
-                    <path d="M 95,40 C 95,30 105,26 112,30 C 116,34 113,42 107,44 C 100,44 95,42 95,40 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2" stroke-linejoin="round"/>
-                    <!-- 人差し指 -->
-                    <path d="M 124,42 C 134,40 144,42 148,44 C 149,45 149,47 148,48 C 144,49 134,48 124,47 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 中指（最も長い） -->
-                    <path d="M 124,46 C 136,44 148,46 152,48 C 153,49 153,51 152,52 C 148,53 136,52 124,51 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 薬指 -->
-                    <path d="M 124,50 C 134,48 146,50 150,52 C 151,53 151,55 150,56 C 146,57 134,56 124,55 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 小指（最も短い） -->
-                    <path d="M 124,54 C 132,53 140,54 143,56 C 144,57 144,58 143,59 C 140,60 132,59 124,58 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                </g>
-                <!-- 動作方向を示す曲線矢印（掌屈方向：下） -->
-                <path d="M 132,30 Q 148,55 138,90" stroke="#007bff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <polygon points="132,87 138,100 144,87" fill="#007bff"/>
-            </svg>
-        </div>
+        <h3> 動作 1：掌屈（しょうくつ）</h3>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
@@ -119,46 +92,14 @@
             </div>
         </div>
         <div class="power-group">
-            <label>出力パワー上限：<span id="palmarPowerVal" class="power-value">100</span>%</label>
+            <label>ストレッチ強度：<span id="palmarPowerVal" class="power-value">100</span>%</label>
             <input type="range" id="palmarPower" min="0" max="100" value="100"
                    oninput="document.getElementById('palmarPowerVal').innerText = this.value">
         </div>
     </div>
 
     <div class="motion-card haikutsu">
-        <h3>動作 2：背屈（はいくつ）</h3>
-        <div class="card-icon">
-            <!-- 背屈アイコン：側面ビュー。前腕（先細り）＋手（手のひら・指4本・親指）が手の甲側へ曲がる -->
-            <svg width="160" height="120" viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
-                <!-- 前腕（側面、肘側で太く手首側で細い） -->
-                <path d="M 5,50 C 25,46 50,50 68,58 C 73,60 76,63 78,65 L 78,75 C 76,77 73,80 68,82 C 50,90 25,94 5,90 Z"
-                      fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.5" stroke-linejoin="round"/>
-                <!-- 手＋指のグループ（背屈方向に-40°回転） -->
-                <g transform="rotate(-40, 78, 70)">
-                    <!-- 手のひら（手の甲側面） -->
-                    <path d="M 78,60 C 90,58 105,58 117,62 C 124,64 126,68 126,70 C 126,72 124,76 117,78 C 105,82 90,82 78,80 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.5" stroke-linejoin="round"/>
-                    <!-- 親指（手の甲側に立ち上がる） -->
-                    <path d="M 95,60 C 95,50 105,46 112,50 C 116,54 113,62 107,64 C 100,64 95,62 95,60 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2" stroke-linejoin="round"/>
-                    <!-- 人差し指 -->
-                    <path d="M 124,62 C 134,60 144,62 148,64 C 149,65 149,67 148,68 C 144,69 134,68 124,67 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 中指（最も長い） -->
-                    <path d="M 124,66 C 136,64 148,66 152,68 C 153,69 153,71 152,72 C 148,73 136,72 124,71 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 薬指 -->
-                    <path d="M 124,70 C 134,68 146,70 150,72 C 151,73 151,75 150,76 C 146,77 134,76 124,75 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                    <!-- 小指（最も短い） -->
-                    <path d="M 124,74 C 132,73 140,74 143,76 C 144,77 144,78 143,79 C 140,80 132,79 124,78 Z"
-                          fill="#f5e0c8" stroke="#8b6a42" stroke-width="1.2"/>
-                </g>
-                <!-- 動作方向を示す曲線矢印（背屈方向：上） -->
-                <path d="M 132,90 Q 148,65 138,30" stroke="#28a745" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <polygon points="132,33 138,20 144,33" fill="#28a745"/>
-            </svg>
-        </div>
+        <h3> 動作 2：背屈（はいくつ）</h3>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
@@ -172,7 +113,7 @@
             </div>
         </div>
         <div class="power-group">
-            <label>出力パワー上限：<span id="dorsalPowerVal" class="power-value">100</span>%</label>
+            <label>ストレッチ強度：<span id="dorsalPowerVal" class="power-value">100</span>%</label>
             <input type="range" id="dorsalPower" min="0" max="100" value="100"
                    oninput="document.getElementById('dorsalPowerVal').innerText = this.value">
         </div>
@@ -180,7 +121,8 @@
 
     <button id="sendBtn" onclick="sendMotionData()" disabled>設定を送信して開始 ▶</button>
 
-    <div id="logArea" class="log">・通信ログ</div>
+    <div class="log-label">通信ログ</div>
+    <div id="logArea" class="log"></div>
 
     <script>
         // ==========================================================
@@ -192,16 +134,22 @@
         let bleDevice = null;
         let bleCharacteristic = null;
 
-        function log(text) {
+        // type: 'info'（灰）/ 'connect'（青）/ 'success'（緑）/ 'error'（赤）
+        function log(text, type = 'info') {
+            const icons = { info: '　', connect: '📡', success: '✅', error: '❌' };
+            const time = new Date().toLocaleTimeString();
             const logArea = document.getElementById('logArea');
-            logArea.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${text}</div>`;
+            logArea.innerHTML += `<div class="log-entry ${type}">
+                <span class="log-time">${time}</span>
+                <span class="log-text">${icons[type]} ${text}</span>
+            </div>`;
             logArea.scrollTop = logArea.scrollHeight;
         }
 
         // 接続処理
         async function connectToDevice() {
             try {
-                log("デバイスを検索中...");
+                log("デバイスを検索中...", "connect");
 
                 // 1. デバイスを探す
                 bleDevice = await navigator.bluetooth.requestDevice({
@@ -223,10 +171,10 @@
                 document.getElementById("connectBtn").innerText = "✅ 接続完了";
                 document.getElementById("connectBtn").style.backgroundColor = "#28a745";
                 
-                log("接続成功！準備完了。");
+                log("接続成功！準備完了", "success");
 
             } catch (error) {
-                log("エラー: " + error);
+                log("エラー: " + error, "error");
             }
         }
 
@@ -249,20 +197,20 @@
                 // 配列作成: [掌屈パワー, 背屈パワー, 掌屈時間, 掌屈角度, 背屈時間, 背屈角度]
                 const dataArray = [palmarPower, dorsalPower, t1, a1, t2, a2];
 
-                log(`送信: 掌屈パワー=${palmarPower}%, 背屈パワー=${dorsalPower}% ／ 掌屈[${t1}秒, ${a1}°] 背屈[${t2}秒, ${a2}°]`);
+                log(`掌屈: ${t1}秒/${Math.abs(a1)}°/強度${palmarPower}%　背屈: ${t2}秒/${a2}°/強度${dorsalPower}%`);
 
                 const dataToSend = new Uint8Array(dataArray);
                 await bleCharacteristic.writeValue(dataToSend);
 
-                log("送信完了！");
+                log("送信完了！設定を反映しました", "success");
 
             } catch (error) {
-                log("送信エラー: " + error);
+                log("送信エラー: " + error, "error");
             }
         }
         // 切断された時に実行される関数
         function onDisconnected(event) {
-            log("⚠️ デバイスとの接続が切れました", "error");
+            log("デバイスとの接続が切れました", "error");
 
             // 1. ステータス表示を「未接続」に戻す
             const statusText = document.getElementById("status");
@@ -271,7 +219,7 @@
 
             // 2. 接続ボタンを元に戻す
             const connectBtn = document.getElementById("connectBtn");
-            connectBtn.innerText = "📡 Arduinoに接続する";
+            connectBtn.innerText = "📡 デバイスに接続する";
             connectBtn.style.backgroundColor = "#6c757d"; // 元のグレーっぽい色
             connectBtn.disabled = false; // 押せるようにする
 
