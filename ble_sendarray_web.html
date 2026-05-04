@@ -43,6 +43,9 @@
         .power-value { font-size: 1.1em; font-weight: bold; color: #007bff; }
         .motion-card.haikutsu .power-value { color: #28a745; }
 
+        /* 動作アイコン */
+        .card-icon { text-align: center; margin: 6px 0 14px; }
+
         /* ボタン */
         button { 
             width: 100%; padding: 15px; font-size: 18px; font-weight: bold; 
@@ -70,7 +73,19 @@
     </div>
 
     <div class="motion-card">
-        <h3> 動作 1：掌屈（しょうくつ）</h3>
+        <h3>動作 1：掌屈（しょうくつ）</h3>
+        <div class="card-icon">
+            <!-- 掌屈アイコン：上から見た腕。手首から手が下方向（掌屈方向）に曲がる -->
+            <svg width="110" height="90" viewBox="0 0 110 90" xmlns="http://www.w3.org/2000/svg">
+                <!-- 前腕（横向き） -->
+                <rect x="5" y="30" width="60" height="18" rx="6" fill="#eaddd0" stroke="#a08060" stroke-width="1.5"/>
+                <!-- 手（下向きに曲がる） -->
+                <rect x="55" y="46" width="18" height="36" rx="6" fill="#eaddd0" stroke="#a08060" stroke-width="1.5"/>
+                <!-- 下向き矢印（掌屈方向） -->
+                <line x1="85" y1="36" x2="85" y2="70" stroke="#007bff" stroke-width="2.5" stroke-linecap="round"/>
+                <polygon points="79,68 85,82 91,68" fill="#007bff"/>
+            </svg>
+        </div>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
@@ -91,7 +106,19 @@
     </div>
 
     <div class="motion-card haikutsu">
-        <h3> 動作 2：背屈（はいくつ）</h3>
+        <h3>動作 2：背屈（はいくつ）</h3>
+        <div class="card-icon">
+            <!-- 背屈アイコン：上から見た腕。手首から手が上方向（背屈方向）に曲がる -->
+            <svg width="110" height="90" viewBox="0 0 110 90" xmlns="http://www.w3.org/2000/svg">
+                <!-- 前腕（横向き） -->
+                <rect x="5" y="42" width="60" height="18" rx="6" fill="#eaddd0" stroke="#a08060" stroke-width="1.5"/>
+                <!-- 手（上向きに曲がる） -->
+                <rect x="55" y="6" width="18" height="38" rx="6" fill="#eaddd0" stroke="#a08060" stroke-width="1.5"/>
+                <!-- 上向き矢印（背屈方向） -->
+                <line x1="85" y1="54" x2="85" y2="20" stroke="#28a745" stroke-width="2.5" stroke-linecap="round"/>
+                <polygon points="79,22 85,8 91,22" fill="#28a745"/>
+            </svg>
+        </div>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
