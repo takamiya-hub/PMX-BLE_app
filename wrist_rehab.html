@@ -26,14 +26,14 @@
         }
         .offset-row   { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .offset-title { font-weight: bold; font-size: 0.95em; color: #555; white-space: nowrap; }
-        .offset-inputs { display: flex; align-items: center; gap: 12px; }
+        .offset-inputs { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         /* オフセット入力欄は幅を小さくする */
         .offset-inputs input[type="number"] { width: 70px; padding: 7px 8px; font-size: 15px; }
         .offset-inputs select { padding: 7px 8px; font-size: 15px; width: auto; }
         .offset-inputs .unit-inline { font-size: 0.85em; color: #888; }
         .offset-inputs .dir-label   { font-size: 0.95em; color: #666; font-weight: bold; white-space: nowrap; }
-        /* 角度グループと方向グループの間の空きスペース */
-        .offset-inputs .group-divider { width: 12px; flex-shrink: 0; }
+        /* 方向グループ・角度グループをそれぞれ折り返し単位にまとめる */
+        .offset-inputs .input-subgroup { display: flex; align-items: center; gap: 8px; }
         /* フィードバックも小さめにする */
         .card.offset .feedback { margin-top: 8px; padding: 5px 10px; font-size: 0.85em; }
         /* 掌屈カード（青） */
@@ -122,18 +122,23 @@
         <p class="offset-heading">オフセット：反復中心位置</p>
         <div class="offset-row">
             <div class="offset-inputs">
-                <span class="dir-label">方向</span>
-                <select id="offsetDir" onchange="onOffsetDirChange()">
-                    <option value="neutral">中立位（0°）</option>
-                    <option value="palmar">掌屈方向</option>
-                    <option value="dorsal">背屈方向</option>
-                </select>
-                <span class="group-divider"></span>
+                <!-- 方向グループ：折り返しの単位 -->
+                <div class="input-subgroup">
+                    <span class="dir-label">方向</span>
+                    <select id="offsetDir" onchange="onOffsetDirChange()">
+                        <option value="neutral">中立位（0°）</option>
+                        <option value="palmar">掌屈方向</option>
+                        <option value="dorsal">背屈方向</option>
+                    </select>
+                </div>
+                <!-- 角度グループ：折り返しの単位 -->
                 <!-- 中立位が選択中は入力不要のため disabled にする -->
-                <span class="offset-title">角度</span>
-                <input type="number" id="offsetMag" value="0" min="0" max="90" placeholder="0-90" disabled
-                       oninput="updateFeedback()">
-                <span class="unit-inline">度</span>
+                <div class="input-subgroup">
+                    <span class="offset-title">角度</span>
+                    <input type="number" id="offsetMag" value="0" min="0" max="90" placeholder="0-90" disabled
+                           oninput="updateFeedback()">
+                    <span class="unit-inline">度</span>
+                </div>
             </div>
         </div>
         <!-- 現在の中心位置を表示 -->
