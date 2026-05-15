@@ -7,54 +7,93 @@
     <style>
         body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background-color: #f4f7f6; color: #333; }
         h2 { text-align: center; color: #444; margin-bottom: 30px; }
-        
-        /* カードデザイン */
-        .motion-card {
+
+        /* カードデザイン共通 */
+        .card {
             background: white;
-            border-left: 5px solid #007bff; /* 青いライン */
             padding: 20px;
             margin-bottom: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        /* 背屈（動作2）だけ色を変えて区別しやすくする */
-        .motion-card.haikutsu {
-            border-left-color: #28a745; /* 緑のライン */
+        /* 中心位置カード（オレンジ）：動作カードより小さくコンパクトにまとめる */
+        .card.offset  { border-left: 5px solid #fd7e14; padding: 12px 16px; }
+        /* 動作カードの h3 に近いスタイルで、やや小さめにする */
+        .card.offset .offset-heading {
+            margin: 0 0 12px 0;
+            font-size: 1.1em; font-weight: bold; color: #444;
+            border-bottom: 1px solid #eee; padding-bottom: 10px;
         }
+        .offset-row   { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .offset-title { font-weight: bold; font-size: 0.95em; color: #555; white-space: nowrap; }
+        .offset-inputs { display: flex; align-items: center; gap: 12px; }
+        /* オフセット入力欄は幅を小さくする */
+        .offset-inputs input[type="number"] { width: 70px; padding: 7px 8px; font-size: 15px; }
+        .offset-inputs select { padding: 7px 8px; font-size: 15px; width: auto; }
+        .offset-inputs .unit-inline { font-size: 0.85em; color: #888; }
+        .offset-inputs .dir-label   { font-size: 0.95em; color: #666; font-weight: bold; white-space: nowrap; }
+        /* 角度グループと方向グループの間の空きスペース */
+        .offset-inputs .group-divider { width: 12px; flex-shrink: 0; }
+        /* フィードバックも小さめにする */
+        .card.offset .feedback { margin-top: 8px; padding: 5px 10px; font-size: 0.85em; }
+        /* 掌屈カード（青） */
+        .card.palmar  { border-left: 5px solid #007bff; }
+        /* 背屈カード（緑） */
+        .card.dorsal  { border-left: 5px solid #28a745; }
 
-        .motion-card h3 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        
+        .card h3 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+
         /* 入力エリアのレイアウト */
         .input-row { display: flex; justify-content: space-between; gap: 15px; }
         .input-group { flex: 1; }
-        
+
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; color: #666; }
-        input[type="number"] { 
-            width: 100%; padding: 10px; font-size: 16px; 
-            border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; 
+        input[type="number"] {
+            width: 100%; padding: 10px; font-size: 16px;
+            border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;
+        }
+        input[type="number"]:disabled { background: #f0f0f0; color: #aaa; }
+        select {
+            width: 100%; padding: 10px; font-size: 16px;
+            border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;
+            background: white; cursor: pointer;
         }
         span.unit { font-size: 0.8em; color: #888; float: right; margin-top: -25px; margin-right: 10px; position: relative; z-index: 10; }
 
         /* パワースライダー */
         .power-group { margin-top: 15px; }
         .power-group label { display: block; font-weight: bold; font-size: 0.9em; color: #666; margin-bottom: 4px; }
-        input[type="range"] { width: 100%; margin-top: 4px; accent-color: #007bff; cursor: pointer; }
-        .motion-card.haikutsu input[type="range"] { accent-color: #28a745; }
-        .power-value { font-size: 1.1em; font-weight: bold; color: #007bff; }
-        .motion-card.haikutsu .power-value { color: #28a745; }
+        input[type="range"] { width: 100%; margin-top: 4px; cursor: pointer; }
+        .card.palmar input[type="range"] { accent-color: #007bff; }
+        .card.dorsal input[type="range"] { accent-color: #28a745; }
+        .power-value { font-size: 1.1em; font-weight: bold; }
+        .card.palmar .power-value { color: #007bff; }
+        .card.dorsal .power-value { color: #28a745; }
+
+        /* 絶対位置フィードバック表示 */
+        .feedback {
+            margin-top: 12px; padding: 7px 12px;
+            border-radius: 4px; font-size: 0.9em; font-weight: bold;
+            background: #f8f9fa; color: #666;
+            transition: background 0.2s, color 0.2s;
+        }
+        /* 範囲内：緑背景 */
+        .feedback.ok   { background: #d4edda; color: #155724; }
+        /* 範囲外：赤背景 */
+        .feedback.warn { background: #f8d7da; color: #721c24; }
 
         /* ボタン */
-        button { 
-            width: 100%; padding: 15px; font-size: 18px; font-weight: bold; 
-            cursor: pointer; background-color: #007bff; color: white; 
+        button {
+            width: 100%; padding: 15px; font-size: 18px; font-weight: bold;
+            cursor: pointer; background-color: #007bff; color: white;
             border: none; border-radius: 50px; transition: background 0.3s;
             box-shadow: 0 4px 6px rgba(0,123,255,0.2);
         }
         button:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
         button:hover:not(:disabled) { background-color: #0056b3; transform: translateY(-1px); }
-        
+
         button#connectBtn { background-color: #6c757d; margin-bottom: 20px; font-size: 16px; padding: 10px; }
-        
+
         /* ログエリア */
         .log-label { font-weight: bold; font-size: 0.85em; color: #888; margin-top: 24px; margin-bottom: 6px; }
         .log { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 8px 10px; height: 130px; overflow-y: scroll; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
@@ -72,25 +111,54 @@
 
     <h2>リハビリ装置コントローラー</h2>
 
+    <!-- BLE接続エリア -->
     <div style="text-align: center; margin-bottom: 20px;">
         <button id="connectBtn" onclick="connectToDevice()">デバイスに接続する</button>
         <div style="margin-top:5px;">ステータス: <span id="status" class="status-badge" style="color:red;">未接続</span></div>
     </div>
 
-    <div class="motion-card">
-        <h3> 動作 1：掌屈（しょうくつ）</h3>
+    <!-- 中心位置（オフセット）設定カード：コンパクトな1行レイアウト -->
+    <div class="card offset">
+        <p class="offset-heading">オフセット：反復中心位置</p>
+        <div class="offset-row">
+            <div class="offset-inputs">
+                <span class="dir-label">方向</span>
+                <select id="offsetDir" onchange="onOffsetDirChange()">
+                    <option value="neutral">中立位（0°）</option>
+                    <option value="palmar">掌屈方向</option>
+                    <option value="dorsal">背屈方向</option>
+                </select>
+                <span class="group-divider"></span>
+                <!-- 中立位が選択中は入力不要のため disabled にする -->
+                <span class="offset-title">角度</span>
+                <input type="number" id="offsetMag" value="0" min="0" max="90" placeholder="0-90" disabled
+                       oninput="updateFeedback()">
+                <span class="unit-inline">度</span>
+            </div>
+        </div>
+        <!-- 現在の中心位置を表示 -->
+        <div class="feedback" id="offsetFeedback">中心位置: 0°（中立位）</div>
+    </div>
+
+    <!-- 掌屈動作カード -->
+    <div class="card palmar">
+        <h3>動作１：掌屈（屈曲）方向</h3>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
-                <input type="number" id="time1" value="0" placeholder="0-127">
+                <input type="number" id="time1" value="0" min="0" max="12.7" step="0.1" placeholder="0-12.7"
+                       oninput="updateFeedback()">
                 <span class="unit">秒</span>
             </div>
             <div class="input-group">
-                <label>目標角度</label>
-                <input type="number" id="angle1" value="0" placeholder="0-90">
+                <label>ストレッチ幅</label>
+                <input type="number" id="angle1" value="0" min="0" placeholder="0-90"
+                       oninput="updateFeedback()">
                 <span class="unit">度</span>
             </div>
         </div>
+        <!-- 手首の到達角度と範囲チェック結果を表示 -->
+        <div class="feedback" id="palmarFeedback">手首の到達角度: —</div>
         <div class="power-group">
             <label>ストレッチ強度：<span id="palmarPowerVal" class="power-value">100</span>%</label>
             <input type="range" id="palmarPower" min="0" max="100" value="100"
@@ -98,20 +166,25 @@
         </div>
     </div>
 
-    <div class="motion-card haikutsu">
-        <h3> 動作 2：背屈（はいくつ）</h3>
+    <!-- 背屈動作カード -->
+    <div class="card dorsal">
+        <h3>動作２：背屈（伸展）方向</h3>
         <div class="input-row">
             <div class="input-group">
                 <label>移動時間</label>
-                <input type="number" id="time2" value="0" placeholder="0-127">
+                <input type="number" id="time2" value="0" min="0" max="12.7" step="0.1" placeholder="0-12.7"
+                       oninput="updateFeedback()">
                 <span class="unit">秒</span>
             </div>
             <div class="input-group">
-                <label>目標角度</label>
-                <input type="number" id="angle2" value="0" placeholder="0-70">
+                <label>ストレッチ幅</label>
+                <input type="number" id="angle2" value="0" min="0" placeholder="0-70"
+                       oninput="updateFeedback()">
                 <span class="unit">度</span>
             </div>
         </div>
+        <!-- 手首の到達角度と範囲チェック結果を表示 -->
+        <div class="feedback" id="dorsalFeedback">手首の到達角度: —</div>
         <div class="power-group">
             <label>ストレッチ強度：<span id="dorsalPowerVal" class="power-value">100</span>%</label>
             <input type="range" id="dorsalPower" min="0" max="100" value="100"
@@ -125,16 +198,23 @@
     <div id="logArea" class="log"></div>
 
     <script>
-        // ==========================================================
-        // ★ここにあなたのUUIDを入れてください★
-        const SERVICE_UUID = "0979fbb4-70ed-4dd5-af21-51a7067f25ea"; 
+        // BLE 識別子（ファームウェアと必ず一致させること）
+        const SERVICE_UUID = "0979fbb4-70ed-4dd5-af21-51a7067f25ea";
         const CHAR_UUID    = "02ea9c24-b4b3-42de-88e7-0e418eb8b889";
-        // ==========================================================
+
+        // サーボモーターの物理的な動作限界（マネージャーアプリで設定した値と合わせること）
+        const SERVO_MIN_DEG = -90; // 掌屈方向の上限（これ以上掌屈するとエラー）
+        const SERVO_MAX_DEG =  70; // 背屈方向の上限（これ以上背屈するとエラー）
 
         let bleDevice = null;
         let bleCharacteristic = null;
 
-        // type: 'info'（灰）/ 'connect'（青）/ 'success'（緑）/ 'error'（赤）
+        // ページ読み込み時にフィードバック表示を初期化する
+        window.addEventListener("DOMContentLoaded", updateFeedback);
+
+        // -------------------------------------------------------
+        // ログ出力（type: 'info'=灰 / 'connect'=青 / 'success'=緑 / 'error'=赤）
+        // -------------------------------------------------------
         function log(text, type = 'info') {
             const icons = { info: '　', connect: '📡', success: '✅', error: '❌' };
             const time = new Date().toLocaleTimeString();
@@ -146,60 +226,164 @@
             logArea.scrollTop = logArea.scrollHeight;
         }
 
-        // 接続処理
+        // -------------------------------------------------------
+        // 中心位置オフセットの符号付き角度[度]を返す（掌屈=負値, 背屈=正値）
+        // -------------------------------------------------------
+        function getOffsetAngle() {
+            const mag = Math.abs(Number(document.getElementById("offsetMag").value) || 0);
+            const dir = document.getElementById("offsetDir").value;
+            if (dir === "palmar") return -mag;
+            if (dir === "dorsal") return  mag;
+            return 0; // 中立位
+        }
+
+        // -------------------------------------------------------
+        // 角度値（符号付き度数）を「掌屈 ○°」「背屈 ○°」形式の文字列に変換する
+        // 負の数を画面に出さないためのヘルパー関数
+        // -------------------------------------------------------
+        function formatAbsAngle(deg) {
+            if (deg < 0) return `掌屈 ${Math.abs(deg)}°`;
+            if (deg > 0) return `背屈 ${deg}°`;
+            return `0°（中立位）`;
+        }
+
+        // -------------------------------------------------------
+        // 入力値が変わるたびに呼ばれ、絶対位置フィードバックとバリデーションを更新する
+        // -------------------------------------------------------
+        function updateFeedback() {
+            const offset = getOffsetAngle();
+            const angle1 = Math.abs(Number(document.getElementById("angle1").value) || 0);
+            const angle2 = Math.abs(Number(document.getElementById("angle2").value) || 0);
+
+            // 絶対位置を計算
+            // 掌屈目標 = 中心位置 − 掌屈幅（中心より掌屈方向へ）
+            const a1abs = offset - angle1;
+            // 背屈目標 = 中心位置 + 背屈幅（中心より背屈方向へ）
+            const a2abs = offset + angle2;
+
+            // ---- 中心位置フィードバック ----
+            const offsetDir = document.getElementById("offsetDir").value;
+            const offsetFb  = document.getElementById("offsetFeedback");
+            offsetFb.textContent = `中心位置: ${formatAbsAngle(offset)}`;
+            offsetFb.className = "feedback"; // 中心位置は範囲警告なし
+
+            // ---- 掌屈フィードバック ----
+            const palmarFb = document.getElementById("palmarFeedback");
+            const palmarOk = a1abs >= SERVO_MIN_DEG && a1abs <= SERVO_MAX_DEG;
+            const centerLabel = offset === 0 ? '0°' : formatAbsAngle(offset);
+            if (angle1 === 0) {
+                palmarFb.textContent = `手首の到達角度: ${centerLabel}（反復中心 - 動作無し）`;
+                palmarFb.className = "feedback";
+            } else if (palmarOk) {
+                palmarFb.textContent = `手首の到達角度: ${formatAbsAngle(a1abs)}`;
+                palmarFb.className = "feedback ok";
+            } else {
+                palmarFb.textContent = `手首の到達角度: ${formatAbsAngle(a1abs)}　⚠ サーボ動作範囲（掌屈${Math.abs(SERVO_MIN_DEG)}° / 背屈${SERVO_MAX_DEG}°）を超えています`;
+                palmarFb.className = "feedback warn";
+            }
+
+            // ---- 背屈フィードバック ----
+            const dorsalFb = document.getElementById("dorsalFeedback");
+            const dorsalOk = a2abs >= SERVO_MIN_DEG && a2abs <= SERVO_MAX_DEG;
+            if (angle2 === 0) {
+                dorsalFb.textContent = `手首の到達角度: ${centerLabel}（反復中心 - 動作無し）`;
+                dorsalFb.className = "feedback";
+            } else if (dorsalOk) {
+                dorsalFb.textContent = `手首の到達角度: ${formatAbsAngle(a2abs)}`;
+                dorsalFb.className = "feedback ok";
+            } else {
+                dorsalFb.textContent = `手首の到達角度: ${formatAbsAngle(a2abs)}　⚠ サーボ動作範囲（掌屈${Math.abs(SERVO_MIN_DEG)}° / 背屈${SERVO_MAX_DEG}°）を超えています`;
+                dorsalFb.className = "feedback warn";
+            }
+
+            // ---- 送信ボタンの有効・無効を更新 ----
+            // 接続済み かつ 範囲チェックがすべてOKの場合のみ送信可能
+            const allOk = (angle1 === 0 || palmarOk) && (angle2 === 0 || dorsalOk);
+            document.getElementById("sendBtn").disabled = !(bleCharacteristic && allOk);
+        }
+
+        // -------------------------------------------------------
+        // 方向セレクタが変わったとき：中立位なら角度入力欄を無効化する
+        // -------------------------------------------------------
+        function onOffsetDirChange() {
+            const isNeutral = document.getElementById("offsetDir").value === "neutral";
+            const magInput  = document.getElementById("offsetMag");
+            magInput.disabled = isNeutral;
+            if (isNeutral) magInput.value = 0;
+            updateFeedback();
+        }
+
+        // -------------------------------------------------------
+        // BLE接続処理
+        // -------------------------------------------------------
         async function connectToDevice() {
             try {
                 log("デバイスを検索中...", "connect");
 
-                // 1. デバイスを探す
                 bleDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ services: [SERVICE_UUID] }]
                 });
 
-                // 「gattserverdisconnected」というイベントが起きたら onDisconnected(切断) を実行せよ
+                // 切断イベントのハンドラを登録する
                 bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
-                
-                // 2. サーバーに接続
-                const server = await bleDevice.gatt.connect();
-                const service = await server.getPrimaryService(SERVICE_UUID);
+
+                const server    = await bleDevice.gatt.connect();
+                const service   = await server.getPrimaryService(SERVICE_UUID);
                 bleCharacteristic = await service.getCharacteristic(CHAR_UUID);
 
-                document.getElementById("status").innerText = "接続済み";
+                document.getElementById("status").innerText   = "接続済み";
                 document.getElementById("status").style.color = "green";
-                document.getElementById("sendBtn").disabled = false;
-                // 接続ボタンを目立たなくする
-                document.getElementById("connectBtn").innerText = "✅ 接続完了";
+                document.getElementById("connectBtn").innerText          = "✅ 接続完了";
                 document.getElementById("connectBtn").style.backgroundColor = "#28a745";
-                
+
                 log("接続成功！準備完了", "success");
+
+                // 接続後、現在の入力値でバリデーションを更新し送信ボタンの状態を反映する
+                updateFeedback();
 
             } catch (error) {
                 log("エラー: " + error, "error");
             }
         }
 
+        // -------------------------------------------------------
         // 送信処理
+        // -------------------------------------------------------
         async function sendMotionData() {
             if (!bleCharacteristic) return;
 
             try {
-                // 入力値の取得
-                let palmarPower = Number(document.getElementById("palmarPower").value);
-                let dorsalPower = Number(document.getElementById("dorsalPower").value);
-                let t1 = Number(document.getElementById("time1").value);
-                let a1 = Number(document.getElementById("angle1").value);
-                let t2 = Number(document.getElementById("time2").value);
-                let a2 = Number(document.getElementById("angle2").value);
+                const palmarPower = Number(document.getElementById("palmarPower").value);
+                const dorsalPower = Number(document.getElementById("dorsalPower").value);
+                const offset      = getOffsetAngle();
+                // 0.1秒単位で入力された値を×10して整数化（1単位=0.1秒としてArduinoへ送信）
+                const t1 = Math.round(Number(document.getElementById("time1").value) * 10);
+                const t2 = Math.round(Number(document.getElementById("time2").value) * 10);
+                const angle1      = Math.abs(Number(document.getElementById("angle1").value) || 0);
+                const angle2      = Math.abs(Number(document.getElementById("angle2").value) || 0);
 
-                // 掌屈（動作1）の角度をマイナスに変換（掌屈はサーボの負方向）
-                a1 = -Math.abs(a1);
+                // 中心位置を基準に絶対角度を計算する
+                // 掌屈目標：中心位置から掌屈方向（負方向）へ angle1 度分
+                const a1abs = offset - angle1;
+                // 背屈目標：中心位置から背屈方向（正方向）へ angle2 度分
+                const a2abs = offset + angle2;
 
-                // 配列作成: [掌屈パワー, 背屈パワー, 掌屈時間, 掌屈角度, 背屈時間, 背屈角度]
-                const dataArray = [palmarPower, dorsalPower, t1, a1, t2, a2];
+                // サーボ動作範囲の最終チェック（送信直前にも確認）
+                if (a1abs < SERVO_MIN_DEG || a1abs > SERVO_MAX_DEG ||
+                    a2abs < SERVO_MIN_DEG || a2abs > SERVO_MAX_DEG) {
+                    log("絶対位置がサーボ動作範囲外です。設定を見直してください", "error");
+                    return;
+                }
 
-                log(`掌屈: ${t1}秒/${Math.abs(a1)}°/強度${palmarPower}%　背屈: ${t2}秒/${a2}°/強度${dorsalPower}%`);
+                // BLE送信パケット（7バイト）を構築する
+                // [掌屈パワー, 背屈パワー, オフセット角度, 掌屈時間, 掌屈角度(絶対値), 背屈時間, 背屈角度(絶対値)]
+                // 負の値は Uint8Array に入れると自動的に2の補数表現になり、
+                // Arduino側で int8_t にキャストすると正しく符号付き値として復元される
+                const dataArray   = [palmarPower, dorsalPower, offset, t1, a1abs, t2, a2abs];
+                const dataToSend  = new Uint8Array(dataArray);
 
-                const dataToSend = new Uint8Array(dataArray);
+                log(`中心: ${formatAbsAngle(offset)}　掌屈: ${t1}秒→${formatAbsAngle(a1abs)} 強度${palmarPower}%　背屈: ${t2}秒→${formatAbsAngle(a2abs)} 強度${dorsalPower}%`);
+
                 await bleCharacteristic.writeValue(dataToSend);
 
                 log("送信完了！設定を反映しました", "success");
@@ -208,26 +392,25 @@
                 log("送信エラー: " + error, "error");
             }
         }
-        // 切断された時に実行される関数
+
+        // -------------------------------------------------------
+        // BLE切断時の処理：UIを未接続状態に戻す
+        // -------------------------------------------------------
         function onDisconnected(event) {
             log("デバイスとの接続が切れました", "error");
 
-            // 1. ステータス表示を「未接続」に戻す
-            const statusText = document.getElementById("status");
-            statusText.innerText = "未接続";
-            statusText.style.color = "red";
+            document.getElementById("status").innerText   = "未接続";
+            document.getElementById("status").style.color = "red";
 
-            // 2. 接続ボタンを元に戻す
             const connectBtn = document.getElementById("connectBtn");
-            connectBtn.innerText = "📡 デバイスに接続する";
-            connectBtn.style.backgroundColor = "#6c757d"; // 元のグレーっぽい色
-            connectBtn.disabled = false; // 押せるようにする
+            connectBtn.innerText          = "📡 デバイスに接続する";
+            connectBtn.style.backgroundColor = "#6c757d";
+            connectBtn.disabled = false;
 
-            // 3. 送信ボタンを押せなくする
+            // 切断中は送信できないため無効化する
             document.getElementById("sendBtn").disabled = true;
-            
-            // 変数をクリア
-            bleDevice = null;
+
+            bleDevice         = null;
             bleCharacteristic = null;
         }
     </script>
