@@ -387,7 +387,7 @@
                 const dataArray   = [palmarPower, dorsalPower, offset, t1, a1abs, t2, a2abs];
                 const dataToSend  = new Uint8Array(dataArray);
 
-                log(`中心: ${formatAbsAngle(offset)}　掌屈: ${t1}秒→${formatAbsAngle(a1abs)} 強度${palmarPower}%　背屈: ${t2}秒→${formatAbsAngle(a2abs)} 強度${dorsalPower}%`);
+                log(`中心: ${formatAbsAngle(offset)}　掌屈: ${t1/10}秒→${formatAbsAngle(a1abs)} 強度${palmarPower}%　背屈: ${t2/10}秒→${formatAbsAngle(a2abs)} 強度${dorsalPower}%`);
 
                 await bleCharacteristic.writeValue(dataToSend);
 
